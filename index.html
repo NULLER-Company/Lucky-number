@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 Lucky Number - Проверь свой номер!</title>
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  /* фон */
+  --bg:#06100b;
+  --bg-2:#0a1711;
+  /* стекло */
+  --glass:rgba(255,255,255,.045);
+  --glass-2:rgba(255,255,255,.07);
+  --glass-3:rgba(255,255,255,.11);
+  --line:rgba(255,255,255,.085);
+  --line-2:rgba(255,255,255,.16);
+  /* зелёная палитра */
+  --green-900:#0d2e21;
+  --green-700:#15523b;
+  --green-500:#1f7a55;
+  --green-400:#2f9a6d;
+  --green-300:#58b792;
+  --green-200:#9ccbb4;
+  --mint:#d9efe4;
+  /* премиум-акцент */
+  --champagne:#c9b587;
+  --champagne-dim:#8e7f5e;
+  /* текст */
+  --text:#e9f2ec;
+  --muted:rgba(233,242,236,.55);
+  --faint:rgba(233,242,236,.3);
+  /* служебное */
+  --bad:#b4705f;
+  --good:#58b792;
+  --radius:22px;
+  --shadow:0 18px 40px -20px rgba(0,0,0,.85);
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:'Manrope',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  letter-spacing:.01em;
+}
+
+/* ===== МАТОВЫЙ ФОН БЕЗ СВЕЧЕНИЙ ===== */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:-2;
+  background:
+    linear-gradient(170deg,#0a1a13 0%,#06100b 45%,#071511 100%),
+    radial-gradient(120% 80% at 15% 0%,rgba(31,122,85,.22) 0%,transparent 60%),
+    radial-gradient(90% 70% at 90% 100%,rgba(13,46,33,.6) 0%,transparent 60%);
+  background-blend-mode:normal;
+}
+/* тонкая матовая «зернистость» стекла */
+body::after{
+  content:'';
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+}
+
+/* частицы — почти невидимая пыль, без неона */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+.particle{
+  position:absolute;border-radius:50%;
+  background:rgba(217,239,228,.5)!important;
+  filter:blur(.5px);opacity:0;
+  animation:float linear infinite;
+}
+@keyframes float{
+  0%{transform:translateY(100vh);opacity:0}
+  12%{opacity:.18}
+  88%{opacity:.18}
+  100%{transform:translateY(-10vh);opacity:0}
+}
+
+/* ===== ШАПКА ===== */
+.header{text-align:center;padding:48px 20px 14px;position:relative}
+.logo{
+  font-family:'Manrope',sans-serif;
+  font-size:clamp(1.9rem,4.4vw,3rem);
+  font-weight:800;
+  letter-spacing:-.02em;
+  color:var(--mint);
+  margin-bottom:10px;
+}
+.logo span,.logo em{font-style:normal;color:var(--green-300)}
+.subtitle{
+  color:var(--faint);
+  font-size:.72rem;
+  letter-spacing:.42em;
+  text-transform:uppercase;
+  font-weight:600;
+}
+.header::after{
+  content:'';display:block;width:54px;height:1px;margin:18px auto 0;
+  background:linear-gradient(90deg,transparent,var(--line-2),transparent);
+}
+
+/* ===== БАЛАНС (стекло) ===== */
+.coin-display{
+  position:fixed;top:20px;right:20px;z-index:1000;
+  display:flex;align-items:center;gap:11px;
+  padding:10px 20px 10px 12px;
+  border-radius:40px;
+  background:var(--glass-2);
+  border:1px solid var(--line-2);
+  backdrop-filter:blur(22px) saturate(150%);
+  -webkit-backdrop-filter:blur(22px) saturate(150%);
+  box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.1);
+  cursor:pointer;
+  transition:background .3s,border-color .3s,transform .3s;
+}
+.coin-display:hover{background:var(--glass-3);border-color:rgba(255,255,255,.26)}
+.coin-icon{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:14px;color:#1a1408;
+  background:linear-gradient(145deg,#e0cfa2,var(--champagne) 45%,#9c8a63);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.55);
+  animation:coinSpin 7s linear infinite;
+}
+@keyframes coinSpin{0%,70%{transform:rotateY(0)}85%{transform:rotateY(180deg)}100%{transform:rotateY(360deg)}}
+.coin-amount{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.1rem;font-weight:700;
+  color:var(--mint);font-variant-numeric:tabular-nums;
+}
+
+/* ===== ТАБЫ ===== */
+.nav-tabs{
+  display:flex;justify-content:center;gap:8px;flex-wrap:wrap;
+  max-width:760px;margin:0 auto;padding:22px 16px;
+}
+.nav-tab{
+  padding:11px 24px;border-radius:40px;
+  background:var(--glass);
+  border:1px solid var(--line);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  color:var(--muted);font-weight:600;font-size:.86rem;
+  cursor:pointer;transition:all .28s ease;
+}
+.nav-tab:hover{color:var(--text);border-color:var(--line-2);background:var(--glass-2)}
+.nav-tab.active{
+  color:#eafff5;
+  background:linear-gradient(180deg,rgba(47,154,109,.38),rgba(21,82,59,.42));
+  border-color:rgba(88,183,146,.42);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+/* ===== СЕКЦИИ ===== */
+.section{display:none;max-width:700px;margin:0 auto;padding:14px 20px 60px}
+.section.active{display:block;animation:fadeIn .45s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ===== СТЕКЛЯННАЯ КАРТОЧКА ===== */
+.card{
+  position:relative;overflow:hidden;
+  background:var(--glass);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:34px;margin-bottom:22px;
+  backdrop-filter:blur(26px) saturate(145%);
+  -webkit-backdrop-filter:blur(26px) saturate(145%);
+  box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.card::before{
+  content:'';position:absolute;top:0;left:24px;right:24px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(156,203,180,.35),transparent);
+}
+.card-title{font-size:1.18rem;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.card-subtitle{color:var(--faint);font-size:.8rem;margin-bottom:24px;letter-spacing:.02em}
+
+/* ===== ПОЛЯ ВВОДА ===== */
+.input-group{margin-bottom:18px}
+.input-group label{
+  display:block;font-size:.68rem;color:var(--faint);
+  margin-bottom:9px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;
+}
+.input-wrapper input,.input-wrapper select{
+  width:100%;padding:16px 18px;
+  background:rgba(0,0,0,.22);
+  border:1px solid var(--line);
+  border-radius:14px;color:var(--mint);
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.05rem;letter-spacing:.08em;
+  outline:none;transition:border-color .25s,background .25s;
+  backdrop-filter:blur(8px);
+}
+.input-wrapper input:focus{border-color:rgba(88,183,146,.55);background:rgba(0,0,0,.3)}
+.input-wrapper input::placeholder{color:rgba(233,242,236,.22);font-family:'Manrope',sans-serif;letter-spacing:.02em}
+
+.cost-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 14px;margin-bottom:16px;border-radius:30px;
+  font-size:.75rem;color:var(--champagne);
+  background:rgba(201,181,135,.08);
+  border:1px solid rgba(201,181,135,.22);
+}
+
+/* ===== КНОПКИ (матовое стекло) ===== */
+.btn{
+  position:relative;overflow:hidden;width:100%;
+  padding:17px;border:1px solid var(--line-2);border-radius:14px;
+  font-family:'Manrope',sans-serif;font-size:.86rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.16em;cursor:pointer;
+  transition:transform .2s,background .25s,border-color .25s,opacity .2s;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1);
+}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none!important}
+
+.btn-primary{background:linear-gradient(180deg,rgba(47,154,109,.5),rgba(21,82,59,.55));color:#eafff5;border-color:rgba(88,183,146,.35)}
+.btn-primary:hover{background:linear-gradient(180deg,rgba(57,174,124,.62),rgba(25,94,68,.65))}
+
+.btn-green{background:linear-gradient(180deg,rgba(88,183,146,.55),rgba(31,122,85,.6));color:#06130d;border-color:rgba(156,203,180,.45)}
+.btn-green:hover{background:linear-gradient(180deg,rgba(104,199,162,.7),rgba(38,138,98,.72))}
+
+.btn-gold{background:linear-gradient(180deg,rgba(201,181,135,.26),rgba(142,127,94,.2));color:#f0e6cd;border-color:rgba(201,181,135,.45)}
+.btn-gold:hover{background:linear-gradient(180deg,rgba(201,181,135,.38),rgba(142,127,94,.3))}
+
+.btn-red{background:linear-gradient(180deg,rgba(180,112,95,.28),rgba(120,66,55,.3));color:#f3ded8;border-color:rgba(180,112,95,.38)}
+.btn-ripple{display:none}
+
+/* ===== РЕЗУЛЬТАТ ===== */
+.result-container{display:none;margin-top:24px}
+.result-container.show{display:block;animation:resultPop .45s cubic-bezier(.2,.9,.3,1) both}
+@keyframes resultPop{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+
+.result-box{
+  text-align:center;padding:30px 24px;border-radius:18px;
+  background:rgba(0,0,0,.2);
+  border:1px solid var(--line);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+/* ====== СЛОТ-АНИМАЦИЯ ЦИФР ====== */
+.result-number{
+  font-family:'JetBrains Mono',monospace;
+  font-size:clamp(1.3rem,4.6vw,2rem);
+  font-weight:800;letter-spacing:.06em;
+  margin:16px 0;color:var(--mint);
+  display:flex;justify-content:center;align-items:flex-end;flex-wrap:wrap;
+  line-height:1;
+}
+.slot{
+  display:inline-block;position:relative;
+  height:1.08em;width:.66em;overflow:hidden;
+  vertical-align:bottom;
+}
+.slot::before,.slot::after{
+  content:'';position:absolute;left:0;right:0;height:26%;z-index:2;pointer-events:none;
+}
+.slot::before{top:0;background:linear-gradient(to bottom,rgba(6,16,11,.85),transparent)}
+.slot::after{bottom:0;background:linear-gradient(to top,rgba(6,16,11,.85),transparent)}
+.slot-static{width:auto;overflow:visible;color:var(--green-200);opacity:.7;padding:0 .06em}
+.slot-reel{display:block;transform:translateY(0);will-change:transform}
+.slot-reel>i{
+  display:block;height:1.08em;line-height:1.08em;
+  font-style:normal;text-align:center;
+}
+.slot.spin .slot-reel{
+  transition:transform var(--dur,1.4s) cubic-bezier(.14,.78,.2,1) var(--delay,0s);
+  transform:translateY(calc(var(--idx) * -1.08em));
+}
+/* лёгкое смазывание во время прокрутки */
+.slot.spin .slot-reel{animation:reelBlur var(--dur,1.4s) var(--delay,0s) both}
+@keyframes reelBlur{
+  0%{filter:blur(2.4px)}
+  70%{filter:blur(1.2px)}
+  100%{filter:blur(0)}
+}
+/* «приземление» каждого барабана */
+.slot.landed{animation:landBump .22s ease-out}
+@keyframes landBump{0%{transform:translateY(-2px)}60%{transform:translateY(1px)}100%{transform:none}}
+
+/* ===== БЕЙДЖИ РЕДКОСТИ (матовые, без свечения) ===== */
+.rarity-badge{
+  display:inline-block;padding:7px 20px;border-radius:30px;
+  font-size:.7rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
+  margin:8px 0;backdrop-filter:blur(10px);
+  border:1px solid;
+}
+.rarity-common{background:rgba(140,154,147,.1);border-color:rgba(140,154,147,.3);color:#8c9a93}
+.rarity-uncommon{background:rgba(134,183,154,.12);border-color:rgba(134,183,154,.34);color:#86b79a}
+.rarity-rare{background:rgba(111,169,160,.14);border-color:rgba(111,169,160,.38);color:#8fcac0}
+.rarity-epic{background:rgba(63,163,122,.16);border-color:rgba(63,163,122,.45);color:#5fc296}
+.rarity-legendary{background:rgba(201,181,135,.14);border-color:rgba(201,181,135,.5);color:#dcc998}
+.rarity-mythic{
+  color:#f3ece0;border-color:rgba(201,181,135,.55);
+  background:linear-gradient(110deg,rgba(31,122,85,.3),rgba(201,181,135,.22),rgba(31,122,85,.3));
+  background-size:220% 100%;
+  animation:satin 6s linear infinite;
+}
+@keyframes satin{0%{background-position:0 0}100%{background-position:220% 0}}
+
+.result-price{
+  font-family:'JetBrains Mono',monospace;
+  font-size:1.8rem;font-weight:800;margin:14px 0;color:var(--mint);
+  font-variant-numeric:tabular-nums;
+}
+.result-price .coin-sym{color:var(--champagne)}
+.result-details{color:var(--faint);font-size:.8rem;margin-top:10px}
+.result-features{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:14px}
+.feature-tag{
+  padding:5px 13px;border-radius:30px;font-size:.7rem;
+  color:var(--green-200);background:rgba(255,255,255,.05);
+  border:1px solid var(--line);backdrop-filter:blur(8px);
+}
+.profit-indicator{margin-top:16px;padding:12px;border-radius:12px;font-weight:700;font-size:.9rem;border:1px solid}
+.profit-positive{background:rgba(88,183,146,.1);border-color:rgba(88,183,146,.3);color:var(--good)}
+.profit-negative{background:rgba(180,112,95,.1);border-color:rgba(180,112,95,.3);color:var(--bad)}
+.collect-btn-container{margin-top:20px}
+
+/* ===== РУЛЕТКА ===== */
+.roulette-container{
+  position:relative;overflow:hidden;margin:22px 0;border-radius:18px;
+  background:rgba(0,0,0,.26);
+  border:1px solid var(--line);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+.roulette-window{position:relative;height:122px;overflow:hidden}
+.roulette-pointer,.roulette-pointer-bottom{
+  position:absolute;left:50%;transform:translateX(-50%);
+  width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;z-index:10;
+}
+.roulette-pointer{top:0;border-top:13px solid var(--champagne)}
+.roulette-pointer-bottom{bottom:0;border-bottom:13px solid var(--champagne)}
+.roulette-strip{display:flex;will-change:transform}
+.roulette-item{
+  min-width:180px;height:122px;flex-shrink:0;padding:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  border-right:1px solid rgba(255,255,255,.06);
+  background:linear-gradient(180deg,rgba(255,255,255,.035),transparent);
+}
+.roulette-item-number{font-family:'JetBrains Mono',monospace;font-size:.92rem;font-weight:700;letter-spacing:.04em}
+.roulette-item-rarity{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.16em}
+.roulette-item-coins{font-size:.8rem;font-weight:700;color:var(--champagne);font-family:'JetBrains Mono',monospace}
+.roulette-highlight{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:182px;height:100%;z-index:5;pointer-events:none;border-radius:4px;
+  border-left:1px solid rgba(255,255,255,.22);border-right:1px solid rgba(255,255,255,.22);
+  background:linear-gradient(180deg,rgba(255,255,255,.07),transparent 40%,rgba(255,255,255,.07));
+}
+.roulette-gradient-left,.roulette-gradient-right{position:absolute;top:0;width:110px;height:100%;z-index:3;pointer-events:none}
+.roulette-gradient-left{left:0;background:linear-gradient(to right,#071410 10%,transparent)}
+.roulette-gradient-right{right:0;background:linear-gradient(to left,#071410 10%,transparent)}
+
+/* ===== СТАТИСТИКА ===== */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:13px;margin-top:18px}
+.stat-card{
+  text-align:center;padding:20px 14px;border-radius:16px;
+  background:var(--glass);border:1px solid var(--line);
+  backdrop-filter:blur(16px);transition:border-color .3s,transform .3s,background .3s;
+}
+.stat-card:hover{transform:translateY(-3px);border-color:var(--line-2);background:var(--glass-2)}
+.stat-value{font-family:'JetBrains Mono',monospace;font-size:1.35rem;font-weight:800;color:var(--mint);font-variant-numeric:tabular-nums}
+.stat-label{font-size:.63rem;color:var(--faint);margin-top:6px;text-transform:uppercase;letter-spacing:.18em;font-weight:700}
+
+/* ===== СПИСКИ / ИСТОРИЯ ===== */
+.history-list{max-height:400px;overflow-y:auto;margin-top:14px;padding-right:4px}
+.history-list::-webkit-scrollbar{width:5px}
+.history-list::-webkit-scrollbar-track{background:rgba(255,255,255,.04);border-radius:3px}
+.history-list::-webkit-scrollbar-thumb{background:rgba(88,183,146,.35);border-radius:3px}
+.history-item{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 16px;margin-bottom:8px;border-radius:13px;
+  background:rgba(255,255,255,.035);border:1px solid var(--line);
+  backdrop-filter:blur(10px);transition:background .25s,border-color .25s;
+}
+.history-item:hover{background:rgba(255,255,255,.06);border-color:var(--line-2)}
+.history-item-number{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.82rem;letter-spacing:.04em}
+.history-item-result{display:flex;align-items:center;gap:8px}
+.history-coins{font-weight:800;font-size:.86rem;font-family:'JetBrains Mono',monospace}
+.history-coins.positive{color:var(--good)}
+.history-coins.negative{color:var(--bad)}
+
+/* ===== УВЕДОМЛЕНИЕ ===== */
+.notification{
+  position:fixed;top:84px;right:20px;z-index:10000;max-width:340px;
+  padding:16px 22px;border-radius:16px;
+  background:rgba(10,23,17,.72);
+  border:1px solid var(--line-2);
+  backdrop-filter:blur(26px) saturate(160%);
+  -webkit-backdrop-filter:blur(26px) saturate(160%);
+  box-shadow:var(--shadow);
+  transform:translateX(130%);transition:transform .45s cubic-bezier(.2,.9,.3,1);
+}
+.notification.show{transform:none}
+.notification.success{border-left:2px solid var(--green-300)}
+.notification.error{border-left:2px solid var(--bad)}
+.notification.info{border-left:2px solid var(--champagne)}
+.notification-title{font-weight:800;margin-bottom:4px;font-size:.92rem}
+.notification-text{font-size:.8rem;color:var(--muted)}
+
+/* монетки */
+.coin-fly{
+  position:fixed;width:26px;height:26px;border-radius:50%;z-index:9999;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;color:#1a1408;
+  background:linear-gradient(145deg,#e0cfa2,var(--champagne) 50%,#9c8a63);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.5);
+}
+
+/* ===== МОДАЛКА ===== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;
+  background:rgba(4,10,7,.65);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.modal-overlay.show{display:flex}
+.modal{
+  width:90%;max-width:430px;padding:36px;text-align:center;border-radius:22px;
+  background:rgba(12,26,19,.78);border:1px solid var(--line-2);
+  backdrop-filter:blur(30px) saturate(160%);box-shadow:var(--shadow);
+  animation:modalPop .35s cubic-bezier(.2,.9,.3,1) both;
+}
+@keyframes modalPop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+.modal h3{font-size:1.3rem;margin-bottom:12px}
+.modal p{color:var(--muted);margin-bottom:24px;font-size:.9rem}
+.modal-buttons{display:flex;gap:10px}
+.modal-buttons .btn{flex:1;padding:14px;font-size:.76rem}
+
+/* ===== ИНФО-БЛОК / ТАБЛИЦА ===== */
+.register-info{
+  padding:20px;border-radius:16px;margin-bottom:20px;
+  background:rgba(31,122,85,.1);border:1px solid rgba(88,183,146,.22);
+  backdrop-filter:blur(12px);
+}
+.register-info h4{color:var(--green-300);margin-bottom:10px;font-size:.95rem}
+.register-info ul{list-style:none}
+.register-info li{padding:5px 0;color:var(--muted);font-size:.82rem}
+.register-info li::before{content:'—  ';color:var(--champagne)}
+
+.rarity-table{width:100%;border-collapse:separate;border-spacing:0 6px;margin-top:14px}
+.rarity-table th{
+  text-align:left;padding:8px 14px;color:var(--faint);
+  font-size:.64rem;text-transform:uppercase;letter-spacing:.18em;font-weight:700;
+}
+.rarity-table td{padding:12px 14px;background:rgba(255,255,255,.035);font-size:.82rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.rarity-table tr td:first-child{border-radius:12px 0 0 12px;border-left:1px solid var(--line)}
+.rarity-table tr td:last-child{border-radius:0 12px 12px 0;border-right:1px solid var(--line)}
+
+/* ===== ЕЖЕДНЕВНЫЙ БОНУС ===== */
+.daily-bonus{
+  text-align:center;padding:20px;border-radius:18px;margin-bottom:20px;cursor:pointer;
+  background:linear-gradient(180deg,rgba(201,181,135,.1),rgba(255,255,255,.03));
+  border:1px solid rgba(201,181,135,.22);
+  backdrop-filter:blur(18px);transition:all .3s;
+}
+.daily-bonus:hover{transform:translateY(-2px);border-color:rgba(201,181,135,.45)}
+.daily-bonus.claimed{opacity:.4;cursor:not-allowed;transform:none}
+.daily-bonus h4{color:var(--champagne);margin-bottom:5px;font-size:.98rem}
+.daily-bonus p{color:var(--faint);font-size:.78rem}
+
+/* ===== ВЫБОР ТИПА ===== */
+.type-selector{display:flex;gap:10px;margin-bottom:20px}
+.type-btn{
+  flex:1;padding:15px 10px;text-align:center;cursor:pointer;border-radius:15px;
+  background:var(--glass);border:1px solid var(--line);
+  color:var(--muted);font-weight:700;font-size:.82rem;
+  backdrop-filter:blur(14px);transition:all .28s;
+}
+.type-btn:hover{border-color:var(--line-2);color:var(--text)}
+.type-btn.active{
+  color:#eafff5;border-color:rgba(88,183,146,.45);
+  background:linear-gradient(180deg,rgba(47,154,109,.3),rgba(21,82,59,.3));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+}
+.type-btn .type-icon{display:block;font-size:1.35rem;margin-bottom:6px;filter:grayscale(.35)}
+
+/* конфетти — приглушённое */
+.confetti-piece{position:fixed;z-index:9998;pointer-events:none;animation:confettiFall linear forwards;opacity:.8}
+@keyframes confettiFall{0%{transform:translateY(-10vh) rotate(0);opacity:.9}100%{transform:translateY(110vh) rotate(540deg);opacity:0}}
+
+/* ===== МОБИЛЬНЫЕ ===== */
+@media (max-width:600px){
+  .header{padding:30px 16px 8px}
+  .coin-display{top:auto;bottom:18px;right:50%;transform:translateX(50%)}
+  .coin-display:hover{transform:translateX(50%)}
+  .card{padding:24px 18px}
+  .nav-tab{padding:9px 16px;font-size:.76rem}
+  .section{padding:12px 12px 100px}
+  .roulette-item{min-width:150px}
+  .roulette-highlight{width:152px}
+  .notification{right:10px;left:10px;max-width:none}
+}
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="coin-display" id="coinDisplay" title="Ваш баланс">
+    <div class="coin-icon">₵</div>
+    <span class="coin-amount" id="coinAmount">100</span>
+</div>
+
+<header class="header">
+    <div class="logo">🎰 LUCKY NUMBER</div>
+    <div class="subtitle">Узнай стоимость своего номера</div>
+</header>
+
+<nav class="nav-tabs">
+    <div class="nav-tab active" data-tab="check" onclick="switchTab('check')">📱 Проверка</div>
+    <div class="nav-tab" data-tab="roulette" onclick="switchTab('roulette')">🎰 Рулетка</div>
+    <div class="nav-tab" data-tab="register" onclick="switchTab('register')">✍️ Регистрация</div>
+    <div class="nav-tab" data-tab="stats" onclick="switchTab('stats')">📊 Статистика</div>
+</nav>
+
+<!-- CHECK SECTION -->
+<div class="section active" id="section-check">
+    <div class="daily-bonus" id="dailyBonus" onclick="claimDailyBonus()">
+        <h4>🎁 Ежедневный бонус</h4>
+        <p>Нажмите, чтобы получить 50 монет бесплатно!</p>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🔍 Проверить номер</div>
+        <div class="card-subtitle">Узнайте редкость и стоимость вашего номера</div>
+
+        <div class="type-selector">
+            <div class="type-btn active" data-type="phone" onclick="selectType('phone')">
+                <span class="type-icon">📱</span>
+                Телефон
+            </div>
+            <div class="type-btn" data-type="car" onclick="selectType('car')">
+                <span class="type-icon">🚗</span>
+                Авто
+            </div>
+        </div>
+
+        <div class="input-group" id="phoneInput">
+            <label>Номер телефона</label>
+            <div class="input-wrapper">
+                <input type="tel" id="phoneNumber" placeholder="+7 (999) 123-45-67" maxlength="18" oninput="formatPhone(this)">
+            </div>
+        </div>
+
+        <div class="input-group" id="carInput" style="display: none;">
+            <label>Номер автомобиля</label>
+            <div class="input-wrapper">
+                <input type="text" id="carNumber" placeholder="А 777 АА 77" maxlength="12" oninput="formatCar(this)" style="text-transform: uppercase;">
+            </div>
+        </div>
+
+        <div class="cost-badge">
+            <span class="coin-icon" style="width:18px;height:18px;font-size:10px;">₵</span>
+            Стоимость проверки: <strong>&nbsp;10 монет</strong>
+        </div>
+
+        <button class="btn btn-primary" onclick="checkNumber()">
+            🔎 ПРОВЕРИТЬ НОМЕР
+        </button>
+
+        <div class="result-container" id="checkResult">
+            <!-- Results appear here -->
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📖 Таблица редкости</div>
+        <div class="card-subtitle">Шансы выпадения и награды</div>
+        <table class="rarity-table">
+            <thead>
+                <tr>
+                    <th>Редкость</th>
+                    <th>Шанс</th>
+                    <th>Награда</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="rarity-badge rarity-common" style="padding:4px 12px;font-size:0.7rem;">Обычный</span></td>
+                    <td>50%</td>
+                    <td style="color: var(--neon-pink);">0-5 ₵</td>
+                </tr>
+                <tr>
+                    <td><span class="rarity-badge rarity-uncommon" style="padding:4px 12px;font-size:0.7rem;">Необычный</span></td>
+                    <td>25%</td>
+                    <td style="color: rgba(255,255,255,0.6);">5-15 ₵</td>
+                </tr>
+                <tr>
+                    <td><span class="rarity-badge rarity-rare" style="padding:4px 12px;font-size:0.7rem;">Редкий</span></td>
+                    <td>13%</td>
+                    <td style="color: var(--neon-green);">15-50 ₵</td>
+                </tr>
+                <tr>
+                    <td><span class="rarity-badge rarity-epic" style="padding:4px 12px;font-size:0.7rem;">Эпический</span></td>
+                    <td>8%</td>
+                    <td style="color: var(--neon-green);">50-200 ₵</td>
+                </tr>
+                <tr>
+                    <td><span class="rarity-badge rarity-legendary" style="padding:4px 12px;font-size:0.7rem;">Легендарный</span></td>
+                    <td>3.5%</td>
+                    <td style="color: var(--gold);">200-1000 ₵</td>
+                </tr>
+                <tr>
+                    <td><span class="rarity-badge rarity-mythic" style="padding:4px 12px;font-size:0.7rem;">Мифический</span></td>
+                    <td>0.5%</td>
+                    <td style="color: var(--gold);">1000-10000 ₵</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ROULETTE SECTION -->
+<div class="section" id="section-roulette">
+    <div class="card">
+        <div class="card-title">🎰 Рулетка номеров</div>
+        <div class="card-subtitle">Испытай удачу! Крути рулетку и выигрывай монеты</div>
+
+        <div class="type-selector" style="margin-bottom: 15px;">
+            <div class="type-btn active" data-rtype="phone" onclick="selectRouletteType('phone')">
+                <span class="type-icon">📱</span>
+                Телефоны
+            </div>
+            <div class="type-btn" data-rtype="car" onclick="selectRouletteType('car')">
+                <span class="type-icon">🚗</span>
+                Авто номера
+            </div>
+        </div>
+
+        <div class="cost-badge">
+            <span class="coin-icon" style="width:18px;height:18px;font-size:10px;">₵</span>
+            Стоимость вращения: <strong>&nbsp;15 монет</strong>
+        </div>
+
+        <div class="roulette-container">
+            <div class="roulette-pointer"></div>
+            <div class="roulette-pointer-bottom"></div>
+            <div class="roulette-gradient-left"></div>
+            <div class="roulette-gradient-right"></div>
+            <div class="roulette-highlight"></div>
+            <div class="roulette-window">
+                <div class="roulette-strip" id="rouletteStrip">
+                    <!-- Items generated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-gold" id="spinBtn" onclick="spinRoulette()">
+            🎰 КРУТИТЬ РУЛЕТКУ — 15 ₵
+        </button>
+
+        <div class="result-container" id="rouletteResult">
+            <!-- Results appear here -->
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📜 История вращений</div>
+        <div class="history-list" id="rouletteHistory">
+            <div style="text-align:center; color: rgba(255,255,255,0.3); padding: 30px;">
+                Пока нет вращений. Крутите рулетку!
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- REGISTER SECTION -->
+<div class="section" id="section-register">
+    <div class="card">
+        <div class="card-title">✍️ Зарегистрировать номер</div>
+        <div class="card-subtitle">Впишите свой номер в базу красивых номеров</div>
+
+        <div class="register-info">
+            <h4>💎 Зачем регистрировать?</h4>
+            <ul>
+                <li>Ваш номер появится в базе красивых номеров</li>
+                <li>Получите бонус +20% к проверке этого номера</li>
+                <li>Участие в розыгрышах среди зарегистрированных</li>
+                <li>Уникальный значок рядом с номером</li>
+            </ul>
+        </div>
+
+        <div class="type-selector">
+            <div class="type-btn active" data-regtype="phone" onclick="selectRegType('phone')">
+                <span class="type-icon">📱</span>
+                Телефон
+            </div>
+            <div class="type-btn" data-regtype="car" onclick="selectRegType('car')">
+                <span class="type-icon">🚗</span>
+                Авто
+            </div>
+        </div>
+
+        <div class="input-group" id="regPhoneInput">
+            <label>Номер для регистрации</label>
+            <div class="input-wrapper">
+                <input type="tel" id="regPhone" placeholder="+7 (999) 123-45-67" maxlength="18" oninput="formatPhone(this)">
+            </div>
+        </div>
+
+        <div class="input-group" id="regCarInput" style="display: none;">
+            <label>Номер авто для регистрации</label>
+            <div class="input-wrapper">
+                <input type="text" id="regCar" placeholder="А 777 АА 77" maxlength="12" oninput="formatCar(this)" style="text-transform: uppercase;">
+            </div>
+        </div>
+
+        <div class="cost-badge">
+            <span class="coin-icon" style="width:18px;height:18px;font-size:10px;">₵</span>
+            Стоимость регистрации: <strong>&nbsp;50 монет</strong>
+        </div>
+
+        <button class="btn btn-green" onclick="registerNumber()">
+            ✍️ ЗАРЕГИСТРИРОВАТЬ — 50 ₵
+        </button>
+
+        <div class="card-subtitle" style="margin-top: 20px; margin-bottom: 10px;">Зарегистрированные номера:</div>
+        <div id="registeredList">
+            <div style="text-align:center; color: rgba(255,255,255,0.3); padding: 20px;">
+                Пока нет зарегистрированных номеров
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STATS SECTION -->
+<div class="section" id="section-stats">
+    <div class="card">
+        <div class="card-title">📊 Ваша статистика</div>
+        <div class="card-subtitle">Общий обзор ваших достижений</div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statCoins">100</div>
+                <div class="stat-label">Монеты</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statChecks">0</div>
+                <div class="stat-label">Проверки</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statSpins">0</div>
+                <div class="stat-label">Вращений</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statBestWin">0</div>
+                <div class="stat-label">Лучший выигрыш</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statEarned">0</div>
+                <div class="stat-label">Заработано</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statSpent">0</div>
+                <div class="stat-label">Потрачено</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🏆 Лучшие находки</div>
+        <div id="bestFinds">
+            <div style="text-align:center; color: rgba(255,255,255,0.3); padding: 30px;">
+                Пока нет проверок. Начните искать!
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">💰 Бонус-магазин</div>
+        <div class="card-subtitle">Обменяйте монеты на бонусы</div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-primary" onclick="buyBonus('luck')" style="font-size:0.85rem; padding:14px; letter-spacing:1px;">
+                🍀 Удача x2 (3 проверки) — 100 ₵
+            </button>
+            <button class="btn btn-primary" onclick="buyBonus('discount')" style="font-size:0.85rem; padding:14px; letter-spacing:1px;">
+                🏷️ Скидка на проверки (5 шт бесплатно) — 40 ₵
+            </button>
+            <button class="btn btn-gold" onclick="buyBonus('mega')" style="font-size:0.85rem; padding:14px; letter-spacing:1px;">
+                ⭐ Мега-спин рулетки — 75 ₵
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modal">
+        <h3 id="modalTitle">Подтверждение</h3>
+        <p id="modalText">Вы уверены?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-primary" id="modalConfirm" onclick="confirmModal()">Да</button>
+            <button class="btn btn-red" onclick="closeModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification">
+    <div class="notification-title" id="notifTitle"></div>
+    <div class="notification-text" id="notifText"></div>
+</div>
+
+<script>
+    // ========== STATE ==========
+    let state = {
+        coins: 100,
+        checks: 0,
+        spins: 0,
+        bestWin: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        history: [],
+        registered: [],
+        bestFinds: [],
+        dailyClaimed: null,
+        bonuses: {
+            luck: 0,
+            freeChecks: 0,
+            megaSpin: false
+        }
+    };
+
+    let currentCheckType = 'phone';
+    let rouletteType = 'phone';
+    let regType = 'phone';
+    let isSpinning = false;
+    let modalCallback = null;
+
+    // Load state
+    function loadState() {
+        const saved = localStorage.getItem('luckyNumberState');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            state = { ...state, ...parsed };
+        }
+        updateUI();
+    }
+
+    function saveState() {
+        localStorage.setItem('luckyNumberState', JSON.stringify(state));
+    }
+
+    // ========== PARTICLES ==========
+    function createParticles() {
+        const container = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (Math.random() * 8 + 6) + 's';
+            p.style.animationDelay = (Math.random() * 10) + 's';
+            p.style.width = (Math.random() * 4 + 2) + 'px';
+            p.style.height = p.style.width;
+            const colors = ['#FFD700', '#00d4ff', '#ff006e', '#00ff88', '#A855F7'];
+            p.style.background = colors[Math.floor(Math.random() * colors.length)];
+            container.appendChild(p);
+        }
+    }
+
+    // ========== UI ==========
+    function updateUI() {
+        document.getElementById('coinAmount').textContent = state.coins;
+        document.getElementById('statCoins').textContent = state.coins;
+        document.getElementById('statChecks').textContent = state.checks;
+        document.getElementById('statSpins').textContent = state.spins;
+        document.getElementById('statBestWin').textContent = state.bestWin;
+        document.getElementById('statEarned').textContent = state.totalEarned;
+        document.getElementById('statSpent').textContent = state.totalSpent;
+
+        // Daily bonus
+        const today = new Date().toDateString();
+        const bonus = document.getElementById('dailyBonus');
+        if (state.dailyClaimed === today) {
+            bonus.classList.add('claimed');
+            bonus.querySelector('p').textContent = 'Уже получено сегодня! Приходите завтра.';
+        } else {
+            bonus.classList.remove('claimed');
+            bonus.querySelector('p').textContent = 'Нажмите, чтобы получить 50 монет бесплатно!';
+        }
+
+        updateRegisteredList();
+        updateBestFinds();
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+        document.getElementById(`section-${tab}`).classList.add('active');
+    }
+
+    function selectType(type) {
+        currentCheckType = type;
+        document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
+        document.querySelector(`[data-type="${type}"]`).classList.add('active');
+        document.getElementById('phoneInput').style.display = type === 'phone' ? 'block' : 'none';
+        document.getElementById('carInput').style.display = type === 'car' ? 'block' : 'none';
+    }
+
+    function selectRouletteType(type) {
+        rouletteType = type;
+        document.querySelectorAll('[data-rtype]').forEach(b => b.classList.remove('active'));
+        document.querySelector(`[data-rtype="${type}"]`).classList.add('active');
+    }
+
+    function selectRegType(type) {
+        regType = type;
+        document.querySelectorAll('[data-regtype]').forEach(b => b.classList.remove('active'));
+        document.querySelector(`[data-regtype="${type}"]`).classList.add('active');
+        document.getElementById('regPhoneInput').style.display = type === 'phone' ? 'block' : 'none';
+        document.getElementById('regCarInput').style.display = type === 'car' ? 'block' : 'none';
+    }
+
+    // ========== FORMATTING ==========
+    function formatPhone(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length > 0) {
+            if (value[0] === '8') value = '7' + value.slice(1);
+            if (value[0] !== '7') value = '7' + value;
+        }
+        let formatted = '';
+        if (value.length > 0) formatted += '+' + value[0];
+        if (value.length > 1) formatted += ' (' + value.slice(1, 4);
+        if (value.length > 4) formatted += ') ' + value.slice(4, 7);
+        if (value.length > 7) formatted += '-' + value.slice(7, 9);
+        if (value.length > 9) formatted += '-' + value.slice(9, 11);
+        input.value = formatted;
+    }
+
+    function formatCar(input) {
+        let value = input.value.toUpperCase().replace(/[^А-ЯA-Z0-9АВЕКМНОРСТУХ]/g, '');
+        input.value = value.slice(0, 9);
+    }
+
+    // ========== NUMBER ANALYSIS ==========
+    function analyzeNumber(number, type) {
+        const digits = number.replace(/\D/g, '');
+        let score = 0;
+        let features = [];
+
+        if (type === 'phone') {
+            const last7 = digits.slice(-7);
+            const last4 = digits.slice(-4);
+            const mid3 = digits.slice(1, 4);
+
+            // All same digits
+            if (/^(\d)\1{6}$/.test(last7)) { score += 500; features.push('7 одинаковых'); }
+            else if (/^(\d)\1{5}/.test(last7) || /(\d)\1{5}$/.test(last7)) { score += 300; features.push('6 одинаковых'); }
+            else if (/(\d)\1{4}/.test(last7)) { score += 150; features.push('5 одинаковых'); }
+            else if (/(\d)\1{3}/.test(last7)) { score += 50; features.push('4 одинаковых'); }
+            else if (/(\d)\1{2}/.test(last7)) { score += 10; features.push('3 одинаковых'); }
+
+            // Sequential
+            if (/1234567|2345678|3456789/.test(last7)) { score += 400; features.push('Последовательность 7'); }
+            else if (/123456|234567|345678|456789/.test(last7)) { score += 200; features.push('Последовательность 6'); }
+            else if (/12345|23456|34567|45678|56789/.test(last7)) { score += 80; features.push('Последовательность 5'); }
+            else if (/1234|2345|3456|4567|5678|6789/.test(last7)) { score += 25; features.push('Последовательность 4'); }
+
+            // Reverse sequential
+            if (/7654321|8765432|9876543/.test(last7)) { score += 350; features.push('Обратная последовательность'); }
+            else if (/4321|5432|6543|7654|8765|9876/.test(last7)) { score += 20; features.push('Обратная 4'); }
+
+            // Palindrome
+            if (last7 === last7.split('').reverse().join('')) { score += 200; features.push('Палиндром'); }
+            else if (last4 === last4.split('').reverse().join('')) { score += 30; features.push('Палиндром 4'); }
+
+            // Mirror numbers
+            if (last7.slice(0, 3) === last7.slice(4)) { score += 100; features.push('Зеркальный'); }
+
+            // Round numbers
+            if (/0000$/.test(last7)) { score += 120; features.push('Круглый ×10000'); }
+            else if (/000$/.test(last7)) { score += 60; features.push('Круглый ×1000'); }
+            else if (/00$/.test(last7)) { score += 15; features.push('Круглый ×100'); }
+
+            // Special combos
+            if (/007/.test(last7)) { score += 35; features.push('Агент 007'); }
+            if (/666/.test(last7)) { score += 30; features.push('666'); }
+            if (/777/.test(last7)) { score += 80; features.push('777 Джекпот'); }
+            if (/888/.test(last7)) { score += 70; features.push('888 Удача'); }
+            if (/999/.test(last7)) { score += 40; features.push('999'); }
+            if (/1337/.test(last7)) { score += 50; features.push('LEET'); }
+            if (/0000000/.test(digits)) { score += 1000; features.push('Все нули!'); }
+            if (/1111111/.test(last7)) { score += 800; features.push('Все единицы!'); }
+
+            // Repeating pattern
+            if (/^(\d{2})\1\1/.test(last7) || /(\d{2})\1\1$/.test(last7)) { score += 60; features.push('Повтор пары'); }
+            if (/^(\d{3})\1/.test(last7)) { score += 45; features.push('Повтор тройки'); }
+
+            // Operator codes
+            if (['900', '999', '911', '800'].includes(mid3)) { score += 25; features.push('VIP код оператора'); }
+        } else {
+            // Car number analysis
+            const letters = number.replace(/[^А-ЯA-ZА-яA-z]/g, '');
+            const nums = number.replace(/\D/g, '');
+
+            if (/^(\d)\1{2}$/.test(nums.slice(0, 3))) { score += 200; features.push('3 одинаковых цифры'); }
+            if (nums === '777') { score += 300; features.push('777 Джекпот'); }
+            if (nums === '001' || nums === '002' || nums === '003') { score += 250; features.push('Правительственный'); }
+            if (nums === '000') { score += 400; features.push('Тройной ноль'); }
+            if (nums === '888') { score += 180; features.push('888 Удача'); }
+            if (nums === '666') { score += 100; features.push('666'); }
+            if (nums === '123') { score += 80; features.push('Последовательность'); }
+            if (nums === '100' || nums === '200' || nums === '500') { score += 90; features.push('Круглый'); }
+            if (/^(\d)\1{2}$/.test(nums)) { score += 120; features.push('Тройка'); }
+
+            // Same letters
+            if (letters.length >= 3) {
+                const uniqueLetters = new Set(letters.split(''));
+                if (uniqueLetters.size === 1) { score += 150; features.push('Одинаковые буквы'); }
+            }
+
+            // Special series
+            const specialLetterCombos = ['ААА', 'ВОР', 'КЕК', 'МММ', 'ООО', 'ЕЕЕ'];
+            for (const combo of specialLetterCombos) {
+                if (letters.includes(combo)) { score += 80; features.push(`Серия ${combo}`); break; }
+            }
+
+            // Region codes
+            if (nums.length > 3) {
+                const region = nums.slice(3);
+                if (['77', '99', '97', '777'].includes(region)) { score += 50; features.push('VIP регион'); }
+            }
+        }
+
+        // Add randomness (80% chance of not being profitable)
+        const rand = Math.random();
+        if (rand > 0.2 && score < 50) {
+            score = Math.floor(Math.random() * 8);
+        }
+
+        // Apply luck bonus
+        if (state.bonuses.luck > 0) {
+            score = Math.floor(score * 2);
+            features.push('🍀 Удача x2');
+        }
+
+        if (features.length === 0) features.push('Обычный номер');
+
+        return { score, features };
+    }
+
+    function getRarity(score) {
+        if (score >= 500) return { name: 'Мифический', class: 'mythic', emoji: '🌟' };
+        if (score >= 150) return { name: 'Легендарный', class: 'legendary', emoji: '👑' };
+        if (score >= 60) return { name: 'Эпический', class: 'epic', emoji: '💎' };
+        if (score >= 25) return { name: 'Редкий', class: 'rare', emoji: '💫' };
+        if (score >= 10) return { name: 'Необычный', class: 'uncommon', emoji: '✨' };
+        return { name: 'Обычный', class: 'common', emoji: '⚪' };
+    }
+
+    function scoreToCoins(score) {
+        if (score >= 500) return Math.floor(1000 + Math.random() * 9000);
+        if (score >= 150) return Math.floor(200 + Math.random() * 800);
+        if (score >= 60) return Math.floor(50 + Math.random() * 150);
+        if (score >= 25) return Math.floor(15 + Math.random() * 35);
+        if (score >= 10) return Math.floor(5 + Math.random() * 10);
+        return Math.floor(Math.random() * 5);
+    }
+
+    // ========== CHECK NUMBER ==========
+    function checkNumber() {
+        let number, displayNumber;
+
+        if (currentCheckType === 'phone') {
+            number = document.getElementById('phoneNumber').value;
+            displayNumber = number;
+            const digits = number.replace(/\D/g, '');
+            if (digits.length < 11) {
+                showNotification('Ошибка', 'Введите полный номер телефона', 'error');
+                return;
+            }
+        } else {
+            number = document.getElementById('carNumber').value;
+            displayNumber = number;
+            if (number.length < 6) {
+                showNotification('Ошибка', 'Введите корректный номер авто', 'error');
+                return;
+            }
+        }
+
+        const cost = state.bonuses.freeChecks > 0 ? 0 : 10;
+
+        if (state.coins < cost) {
+            showNotification('Недостаточно монет! 💰', `Нужно ${cost} монет. У вас: ${state.coins}`, 'error');
+            return;
+        }
+
+        // Deduct cost
+        state.coins -= cost;
+        state.totalSpent += cost;
+        if (state.bonuses.freeChecks > 0) state.bonuses.freeChecks--;
+        if (state.bonuses.luck > 0) state.bonuses.luck--;
+        state.checks++;
+
+        const { score, features } = analyzeNumber(number, currentCheckType);
+        const rarity = getRarity(score);
+        const coins = scoreToCoins(score);
+        const profit = coins - cost;
+
+        // Save to best finds
+        state.bestFinds.push({
+            number: displayNumber,
+            type: currentCheckType,
+            rarity: rarity,
+            coins: coins,
+            date: new Date().toLocaleString()
+        });
+        state.bestFinds.sort((a, b) => b.coins - a.coins);
+        state.bestFinds = state.bestFinds.slice(0, 10);
+
+        if (coins > state.bestWin) state.bestWin = coins;
+
+        saveState();
+        updateUI();
+
+        // Show result
+        const container = document.getElementById('checkResult');
+        container.innerHTML = `
+            <div class="result-box">
+                <div style="font-size: 2rem; margin-bottom: 5px;">${currentCheckType === 'phone' ? '📱' : '🚗'}</div>
+                <div class="result-number" style="color: ${rarity.class === 'mythic' ? '#fff' : rarity.class === 'legendary' ? 'var(--gold)' : rarity.class === 'epic' ? '#A855F7' : '#fff'}">
+                    ${displayNumber}
+                </div>
+                <div class="rarity-badge rarity-${rarity.class}">
+                    ${rarity.emoji} ${rarity.name}
+                </div>
+                <div class="result-price">
+                    <span class="coin-sym">₵</span> ${coins.toLocaleString()}
+                </div>
+                <div class="result-features">
+                    ${features.map(f => `<span class="feature-tag">${f}</span>`).join('')}
+                </div>
+                <div class="profit-indicator ${profit >= 0 ? 'profit-positive' : 'profit-negative'}">
+                    ${profit >= 0 ? '📈 Профит: +' + profit : '📉 Убыток: ' + profit} монет
+                </div>
+                <div class="collect-btn-container">
+                    <button class="btn btn-green" onclick="collectCoins(${coins})">
+                        💰 ЗАБРАТЬ ${coins.toLocaleString()} МОНЕТ
+                    </button>
+                </div>
+            </div>
+        `;
+        container.classList.add('show');
+
+        if (rarity.class === 'legendary' || rarity.class === 'mythic') {
+            launchConfetti();
+        }
+    }
+
+    function collectCoins(amount) {
+        state.coins += amount;
+        state.totalEarned += amount;
+        saveState();
+        updateUI();
+
+        animateCoinFly(amount);
+        showNotification('Монеты получены! 💰', `+${amount.toLocaleString()} монет добавлено к балансу`, 'success');
+
+        // Disable the button
+        event.target.disabled = true;
+        event.target.textContent = '✅ ПОЛУЧЕНО';
+        event.target.classList.remove('btn-green');
+        event.target.style.background = 'rgba(255,255,255,0.1)';
+        event.target.style.color = 'rgba(255,255,255,0.5)';
+    }
+
+    // ========== ROULETTE ==========
+    function generateRouletteNumber(type) {
+        let number, display;
+        if (type === 'phone') {
+            let digits = '+7 (9';
+            for (let i = 0; i < 2; i++) digits += Math.floor(Math.random() * 10);
+            digits += ') ';
+            for (let i = 0; i < 3; i++) digits += Math.floor(Math.random() * 10);
+            digits += '-';
+            for (let i = 0; i < 2; i++) digits += Math.floor(Math.random() * 10);
+            digits += '-';
+            for (let i = 0; i < 2; i++) digits += Math.floor(Math.random() * 10);
+            display = digits;
+            number = digits;
+        } else {
+            const letters = 'АВЕКМНОРСТУХ';
+            let plate = letters[Math.floor(Math.random() * letters.length)];
+            plate += Math.floor(Math.random() * 10);
+            plate += Math.floor(Math.random() * 10);
+            plate += Math.floor(Math.random() * 10);
+            plate += letters[Math.floor(Math.random() * letters.length)];
+            plate += letters[Math.floor(Math.random() * letters.length)];
+            const regions = ['77', '99', '50', '78', '97', '750', '777', '01', '23', '42', '116', '52'];
+            plate += ' ' + regions[Math.floor(Math.random() * regions.length)];
+            display = plate;
+            number = plate;
+        }
+
+        const { score, features } = analyzeNumber(number, type);
+        const rarity = getRarity(score);
+        const coins = scoreToCoins(score);
+
+        return { number, display, score, features, rarity, coins };
+    }
+
+    function generateRouletteItems(count) {
+        const items = [];
+        for (let i = 0; i < count; i++) {
+            // Weight towards common items (80% chance of not being profitable)
+            const rand = Math.random();
+            let item;
+            if (rand < 0.5) {
+                // Force common
+                item = generateRouletteNumber(rouletteType);
+                while (item.score >= 10) {
+                    item = generateRouletteNumber(rouletteType);
+                }
+            } else if (rand < 0.75) {
+                item = generateRouletteNumber(rouletteType);
+                while (item.score < 5 || item.score >= 25) {
+                    item = generateRouletteNumber(rouletteType);
+                }
+            } else if (rand < 0.88) {
+                item = generateRouletteNumber(rouletteType);
+                while (item.score < 15 || item.score >= 60) {
+                    item = generateRouletteNumber(rouletteType);
+                }
+            } else if (rand < 0.95) {
+                item = generateRouletteNumber(rouletteType);
+                while (item.score < 40 || item.score >= 150) {
+                    item = generateRouletteNumber(rouletteType);
+                }
+            } else if (rand < 0.99) {
+                item = generateRouletteNumber(rouletteType);
+                while (item.score < 100) {
+                    item = generateRouletteNumber(rouletteType);
+                }
+            } else {
+                // Ultra rare
+                item = generateRouletteNumber(rouletteType);
+                while (item.score < 300) {
+                    item = generateRouletteNumber(rouletteType);
+                }
+            }
+            items.push(item);
+        }
+        return items;
+    }
+
+    function buildRouletteStrip(items) {
+        const strip = document.getElementById('rouletteStrip');
+        strip.innerHTML = '';
+        strip.style.transition = 'none';
+        strip.style.transform = 'translateX(0)';
+
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'roulette-item';
+            div.style.borderColor = getRarityColor(item.rarity.class);
+            div.innerHTML = `
+                <div class="roulette-item-number" style="color: ${getRarityColor(item.rarity.class)}">${item.display}</div>
+                <div class="roulette-item-rarity" style="color: ${getRarityColor(item.rarity.class)}">${item.rarity.emoji} ${item.rarity.name}</div>
+                <div class="roulette-item-coins">₵ ${item.coins.toLocaleString()}</div>
+            `;
+            strip.appendChild(div);
+        });
+    }
+
+    function getRarityColor(rClass) {
+        const colors = {
+            common: '#9CA3AF',
+            uncommon: '#22C55E',
+            rare: '#3B82F6',
+            epic: '#A855F7',
+            legendary: '#FFD700',
+            mythic: '#ff006e'
+        };
+        return colors[rClass] || '#fff';
+    }
+
+    function spinRoulette() {
+        if (isSpinning) return;
+
+        const cost = state.bonuses.megaSpin ? 0 : 15;
+
+        if (state.coins < cost) {
+            showNotification('Недостаточно монет! 💰', `Нужно ${cost} монет. У вас: ${state.coins}`, 'error');
+            return;
+        }
+
+        state.coins -= cost;
+        state.totalSpent += cost;
+        state.spins++;
+        if (state.bonuses.megaSpin) {
+            state.bonuses.megaSpin = false;
+            showNotification('⭐ Мега-спин!', 'Используется бесплатный мега-спин!', 'info');
+        }
+        saveState();
+        updateUI();
+
+        isSpinning = true;
+        document.getElementById('spinBtn').disabled = true;
+        document.getElementById('rouletteResult').classList.remove('show');
+
+        // Generate items
+        const totalItems = 60;
+        const items = generateRouletteItems(totalItems);
+
+        // Decide winning item (around position 45-50)
+        const winIndex = 45 + Math.floor(Math.random() * 5);
+
+        buildRouletteStrip(items);
+
+        const itemWidth = 180;
+        const containerWidth = document.querySelector('.roulette-window').offsetWidth;
+        const centerOffset = containerWidth / 2 - itemWidth / 2;
+        const targetOffset = -(winIndex * itemWidth) + centerOffset + Math.random() * 40 - 20;
+
+        // Start spin
+        requestAnimationFrame(() => {
+            const strip = document.getElementById('rouletteStrip');
+            strip.style.transition = 'transform 5s cubic-bezier(0.15, 0.85, 0.35, 1.01)';
+            strip.style.transform = `translateX(${targetOffset}px)`;
+        });
+
+        // Add tick sound effect via vibration pattern
+        let tickInterval = setInterval(() => {
+            // Visual tick effect
+        }, 100);
+
+        setTimeout(() => {
+            clearInterval(tickInterval);
+            isSpinning = false;
+            document.getElementById('spinBtn').disabled = false;
+
+            const wonItem = items[winIndex];
+            const profit = wonItem.coins - cost;
+
+            // Add to history
+            state.history.unshift({
+                number: wonItem.display,
+                type: rouletteType,
+                rarity: wonItem.rarity,
+                coins: wonItem.coins,
+                cost: cost,
+                profit: profit,
+                date: new Date().toLocaleString()
+            });
+            state.history = state.history.slice(0, 50);
+
+            if (wonItem.coins > state.bestWin) state.bestWin = wonItem.coins;
+
+            saveState();
+
+            // Show result
+            const resultContainer = document.getElementById('rouletteResult');
+            resultContainer.innerHTML = `
+                <div class="result-box">
+                    <div style="font-size: 2rem; margin-bottom: 5px;">${wonItem.rarity.emoji}</div>
+                    <div class="result-number" style="color: ${getRarityColor(wonItem.rarity.class)}">
+                        ${wonItem.display}
+                    </div>
+                    <div class="rarity-badge rarity-${wonItem.rarity.class}">
+                        ${wonItem.rarity.emoji} ${wonItem.rarity.name}
+                    </div>
+                    <div class="result-price">
+                        <span class="coin-sym">₵</span> ${wonItem.coins.toLocaleString()}
+                    </div>
+                    <div class="result-features">
+                        ${wonItem.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}
+                    </div>
+                    <div class="profit-indicator ${profit >= 0 ? 'profit-positive' : 'profit-negative'}">
+                        ${profit >= 0 ? '📈 Профит: +' + profit : '📉 Убыток: ' + profit} монет
+                    </div>
+                    <div class="collect-btn-container">
+                        <button class="btn btn-green" onclick="collectRouletteWin(${wonItem.coins})">
+                            💰 ЗАБРАТЬ ${wonItem.coins.toLocaleString()} МОНЕТ
+                        </button>
+                    </div>
+                </div>
+            `;
+            resultContainer.classList.add('show');
+
+            updateRouletteHistory();
+
+            if (wonItem.rarity.class === 'legendary' || wonItem.rarity.class === 'mythic') {
+                launchConfetti();
+            }
+        }, 5200);
+    }
+
+    function collectRouletteWin(amount) {
+        state.coins += amount;
+        state.totalEarned += amount;
+        saveState();
+        updateUI();
+
+        animateCoinFly(amount);
+        showNotification('Выигрыш получен! 🎰', `+${amount.toLocaleString()} монет добавлено`, 'success');
+
+        event.target.disabled = true;
+        event.target.textContent = '✅ ПОЛУЧЕНО';
+        event.target.classList.remove('btn-green');
+        event.target.style.background = 'rgba(255,255,255,0.1)';
+        event.target.style.color = 'rgba(255,255,255,0.5)';
+    }
+
+    function updateRouletteHistory() {
+        const list = document.getElementById('rouletteHistory');
+        if (state.history.length === 0) {
+            list.innerHTML = '<div style="text-align:center; color: rgba(255,255,255,0.3); padding: 30px;">Пока нет вращений</div>';
+            return;
+        }
+
+        list.innerHTML = state.history.slice(0, 20).map(item => `
+            <div class="history-item">
+                <div>
+                    <div class="history-item-number" style="color: ${getRarityColor(item.rarity.class)}">
+                        ${item.rarity.emoji} ${item.number}
+                    </div>
+                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 3px;">${item.date}</div>
+                </div>
+                <div class="history-item-result">
+                    <span class="history-coins ${item.profit >= 0 ? 'positive' : 'negative'}">
+                        ${item.profit >= 0 ? '+' : ''}${item.profit} ₵
+                    </span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ========== REGISTER ==========
+    function registerNumber() {
+        let number;
+        if (regType === 'phone') {
+            number = document.getElementById('regPhone').value;
+            const digits = number.replace(/\D/g, '');
+            if (digits.length < 11) {
+                showNotification('Ошибка', 'Введите полный номер', 'error');
+                return;
+            }
+        } else {
+            number = document.getElementById('regCar').value;
+            if (number.length < 6) {
+                showNotification('Ошибка', 'Введите корректный номер', 'error');
+                return;
+            }
+        }
+
+        if (state.coins < 50) {
+            showNotification('Недостаточно монет! 💰', 'Нужно 50 монет для регистрации', 'error');
+            return;
+        }
+
+        // Check if already registered
+        if (state.registered.find(r => r.number === number)) {
+            showNotification('Уже зарегистрирован', 'Этот номер уже в базе', 'info');
+            return;
+        }
+
+        state.coins -= 50;
+        state.totalSpent += 50;
+
+        const { score } = analyzeNumber(number, regType);
+        const rarity = getRarity(score);
+
+        state.registered.push({
+            number: number,
+            type: regType,
+            rarity: rarity,
+            date: new Date().toLocaleString()
+        });
+
+        saveState();
+        updateUI();
+        showNotification('Номер зарегистрирован! ✍️', `${number} добавлен в базу`, 'success');
+
+        if (regType === 'phone') document.getElementById('regPhone').value = '';
+        else document.getElementById('regCar').value = '';
+    }
+
+    function updateRegisteredList() {
+        const list = document.getElementById('registeredList');
+        if (state.registered.length === 0) {
+            list.innerHTML = '<div style="text-align:center; color: rgba(255,255,255,0.3); padding: 20px;">Пока нет зарегистрированных номеров</div>';
+            return;
+        }
+
+        list.innerHTML = state.registered.map((item, index) => `
+            <div class="history-item">
+                <div>
+                    <div class="history-item-number" style="color: ${getRarityColor(item.rarity.class)}">
+                        ${item.type === 'phone' ? '📱' : '🚗'} ${item.rarity.emoji} ${item.number}
+                    </div>
+                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 3px;">
+                        ${item.rarity.name} · ${item.date}
+                    </div>
+                </div>
+                <div style="font-size: 1.2rem;">✅</div>
+            </div>
+        `).join('');
+    }
+
+    function updateBestFinds() {
+        const list = document.getElementById('bestFinds');
+        if (state.bestFinds.length === 0) {
+            list.innerHTML = '<div style="text-align:center; color: rgba(255,255,255,0.3); padding: 30px;">Пока нет проверок</div>';
+            return;
+        }
+
+        list.innerHTML = state.bestFinds.slice(0, 5).map((item, index) => `
+            <div class="history-item">
+                <div>
+                    <div class="history-item-number" style="color: ${getRarityColor(item.rarity.class)}">
+                        ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅'} ${item.rarity.emoji} ${item.number}
+                    </div>
+                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.3); margin-top: 3px;">
+                        ${item.rarity.name} · ${item.date}
+                    </div>
+                </div>
+                <div class="history-coins positive" style="font-weight:900;">
+                    +${item.coins.toLocaleString()} ₵
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ========== BONUSES ==========
+    function buyBonus(type) {
+        if (type === 'luck') {
+            if (state.coins < 100) {
+                showNotification('Недостаточно монет!', 'Нужно 100 монет', 'error');
+                return;
+            }
+            state.coins -= 100;
+            state.totalSpent += 100;
+            state.bonuses.luck = 3;
+            showNotification('🍀 Удача x2 активирована!', 'Следующие 3 проверки с двойным множителем', 'success');
+        } else if (type === 'discount') {
+            if (state.coins < 40) {
+                showNotification('Недостаточно монет!', 'Нужно 40 монет', 'error');
+                return;
+            }
+            state.coins -= 40;
+            state.totalSpent += 40;
+            state.bonuses.freeChecks = 5;
+            showNotification('🏷️ Скидка активирована!', '5 бесплатных проверок', 'success');
+        } else if (type === 'mega') {
+            if (state.coins < 75) {
+                showNotification('Недостаточно монет!', 'Нужно 75 монет', 'error');
+                return;
+            }
+            state.coins -= 75;
+            state.totalSpent += 75;
+            state.bonuses.megaSpin = true;
+            showNotification('⭐ Мега-спин получен!', 'Следующее вращение рулетки бесплатно', 'success');
+        }
+        saveState();
+        updateUI();
+    }
+
+    // ========== DAILY BONUS ==========
+    function claimDailyBonus() {
+        const today = new Date().toDateString();
+        if (state.dailyClaimed === today) {
+            showNotification('Уже получено', 'Приходите завтра за новым бонусом!', 'info');
+            return;
+        }
+
+        state.dailyClaimed = today;
+        state.coins += 50;
+        state.totalEarned += 50;
+        saveState();
+        updateUI();
+
+        animateCoinFly(50);
+        showNotification('Ежедневный бонус! 🎁', '+50 монет добавлено к балансу', 'success');
+    }
+
+    // ========== EFFECTS ==========
+    function showNotification(title, text, type) {
+        const notif = document.getElementById('notification');
+        document.getElementById('notifTitle').textContent = title;
+        document.getElementById('notifText').textContent = text;
+        notif.className = 'notification ' + type + ' show';
+
+        setTimeout(() => {
+            notif.classList.remove('show');
+        }, 3500);
+    }
+
+    function animateCoinFly(amount) {
+        const count = Math.min(amount / 5, 15);
+        const target = document.getElementById('coinDisplay').getBoundingClientRect();
+
+        for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+                const coin = document.createElement('div');
+                coin.className = 'coin-fly';
+                coin.textContent = '₵';
+                coin.style.left = (window.innerWidth / 2 + (Math.random() * 100 - 50)) + 'px';
+                coin.style.top = (window.innerHeight / 2 + (Math.random() * 100 - 50)) + 'px';
+                document.body.appendChild(coin);
+
+                requestAnimationFrame(() => {
+                    coin.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    coin.style.left = (target.left + target.width / 2 - 15) + 'px';
+                    coin.style.top = (target.top + target.height / 2 - 15) + 'px';
+                    coin.style.opacity = '0';
+                    coin.style.transform = 'scale(0.3)';
+                });
+
+                setTimeout(() => coin.remove(), 1000);
+            }, i * 80);
+        }
+    }
+
+    function launchConfetti() {
+        const colors = ['#FFD700', '#ff006e', '#00d4ff', '#00ff88', '#A855F7', '#ff6b35', '#fff'];
+        for (let i = 0; i < 60; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px';
+                confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                confetti.style.height = (Math.random() * 10 + 5) + 'px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                document.body.appendChild(confetti);
+
+                setTimeout(() => confetti.remove(), 4000);
+            }, i * 30);
+        }
+    }
+
+    // ========== MODAL ==========
+    function showModal(title, text, callback) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalText').textContent = text;
+        document.getElementById('modalOverlay').classList.add('show');
+        modalCallback = callback;
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('show');
+        modalCallback = null;
+    }
+
+    function confirmModal() {
+        if (modalCallback) modalCallback();
+        closeModal();
+    }
+
+    // ========== INIT ==========
+    createParticles();
+    loadState();
+
+    // Initialize roulette with some items
+    const initialItems = generateRouletteItems(20);
+    buildRouletteStrip(initialItems);
+    updateRouletteHistory();
+
+    // Animate coin display on hover
+    document.getElementById('coinDisplay').addEventListener('mouseenter', () => {
+        document.getElementById('coinDisplay').style.transform = window.innerWidth <= 600 
+            ? 'translateX(50%) scale(1.1)' 
+            : 'scale(1.1)';
+    });
+    document.getElementById('coinDisplay').addEventListener('mouseleave', () => {
+        document.getElementById('coinDisplay').style.transform = window.innerWidth <= 600 
+            ? 'translateX(50%)' 
+            : 'scale(1)';
+    });
+</script>
+</body>
+</html>
